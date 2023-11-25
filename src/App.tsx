@@ -41,10 +41,10 @@ function App() {
   const paddle_wall_padding: number = 15;
   const pong_ball_size: number = 10;
 
-  const paddle_velocity: number = 4;
-  const ball_velocity: number = 3.5;
+  const paddle_velocity: number = 4.5;
+  const ball_velocity: number = 3.75;
 
-  const og_ai_mode_velocity: number = 3.04;
+  const og_ai_mode_velocity: number = 3.06;
   let ai_mode_velocity: number = og_ai_mode_velocity;
 
   const player_paddle: gameObj = {
@@ -122,8 +122,6 @@ function App() {
       setupPoint();
     }
 
-    console.log(event.key)
-
     //start game with AI
     if(event.key === 'Backspace' && !game_start){
       game_start = true;
@@ -168,13 +166,16 @@ function App() {
   }
 
   //hit paddle checking
-  function hitPaddleX(paddle1: gameObj, paddle2: gameObj, ball: gameObj){
+  function hitPlayerPaddleX(paddle1: gameObj, ball: gameObj){
     //paddle 1
-    if((ball.x < paddle1.x+paddle1.width && ball.x > paddle1.x+(paddle1.width/2)) && (ball.y > paddle1.y && ball.y < paddle1.y+paddle1.height) && ball.xVelocity < 0){
+    if((ball.x < paddle1.x+paddle1.width && ball.x > paddle1.x) && (ball.y > paddle1.y && ball.y < paddle1.y+paddle1.height) && ball.xVelocity < 0){
       return true;
     }
-    //paddle 2
-    else if((ball.x > paddle2.x-paddle2.width && ball.x < paddle2.x-(paddle2.width/2)) && (ball.y > paddle2.y && ball.y < paddle2.y+paddle2.height) && ball.xVelocity > 0){
+    return false;
+  }
+
+  function hitAIPaddleX(paddle: gameObj, ball: gameObj){
+    if((ball.x > paddle.x-paddle.width && ball.x < paddle.x) && (ball.y > paddle.y && ball.y < paddle.y+paddle.height) && ball.xVelocity > 0){
       return true;
     }
     return false;
@@ -206,6 +207,13 @@ function App() {
 
   //reset game when finished
   function resetGame(){
+    play_ai = true;
+    game_start = false;
+    set_player_wins(false);
+    set_ai_wins(false);
+    set_player_scored(false);
+    set_ai_scored(false);
+    set_display_game_start(game_start);
     player_score = 0;
     ai_score = 0;
     set_display_player_score(player_score);
@@ -215,14 +223,10 @@ function App() {
     ball.xVelocity = 0;
     ball.yVelocity = 0;
     ai_mode_velocity = og_ai_mode_velocity;
+    player_paddle.yVelocity = 0;
+    ai_paddle.yVelocity = 0;
     player_paddle.y = (canvas_height/2)-(paddle_height/2);
     ai_paddle.y = (canvas_height/2)-(paddle_height/2);
-    game_start = false;
-    set_player_wins(false);
-    set_ai_wins(false);
-    set_player_scored(false);
-    set_ai_scored(false);
-    set_display_game_start(game_start);
   }
 
   //rendering/game loop 
@@ -251,16 +255,16 @@ function App() {
     //ai paddle
     //ai paddle logic
     if(play_ai){
-      if(player_score === 4) ai_mode_velocity = 3.12;
-      else if(player_score === 8) ai_mode_velocity = 3.20;
-      else if(player_score === 10) ai_mode_velocity = 3.28;
+      if(player_score === 4) ai_mode_velocity = 3.14;
+      else if(player_score === 8) ai_mode_velocity = 3.22;
+      else if(player_score === 10) ai_mode_velocity = 3.2;
 
       if(ai_paddle.y+(ai_paddle.height/2) > ball.y){
-        if(ball.xVelocity < 0) ai_paddle.yVelocity = -ai_mode_velocity/2;
+        if(ball.xVelocity < 0) ai_paddle.yVelocity = -ai_mode_velocity/2.5;
         else ai_paddle.yVelocity = -ai_mode_velocity;
       }
       if(ai_paddle.y+(ai_paddle.height/2) < ball.y){
-        if(ball.xVelocity < 0) ai_paddle.yVelocity = ai_mode_velocity/2;
+        if(ball.xVelocity < 0) ai_paddle.yVelocity = ai_mode_velocity/2.5;
         else ai_paddle.yVelocity = ai_mode_velocity;
       }
     }
@@ -275,23 +279,38 @@ function App() {
     canvasCtx!.fillStyle = "white";
     ball.y += ball.yVelocity;
     ball.x += ball.xVelocity;
+
+    if(hitPlayerPaddleX(player_paddle, ball)){
+      const rel_intersect_y = (player_paddle.y+(player_paddle.height/2))-ball.y;
+      const norm_rel_intersection_y = (rel_intersect_y/(player_paddle.height/2));
+      const bounce_angle = norm_rel_intersection_y * 1.3;
+      ball.xVelocity = (ball_velocity+1.5) * Math.cos(bounce_angle);
+      if(ball.xVelocity < 0) ball.xVelocity = -ball.xVelocity;
+      ball.yVelocity = (ball_velocity+1.5) *- Math.sin(bounce_angle);
+    }
+    if(hitAIPaddleX(ai_paddle, ball)){
+      const rel_intersect_y = (ai_paddle.y+(ai_paddle.height/2))-ball.y;
+      const norm_rel_intersection_y = (rel_intersect_y/(ai_paddle.height/2));
+      const bounce_angle = norm_rel_intersection_y * 1.3;
+      ball.xVelocity = (ball_velocity+1.5) * Math.cos(bounce_angle);
+      if(ball.xVelocity > 0) ball.xVelocity = -ball.xVelocity;
+      ball.yVelocity = (ball_velocity+1.5) *- Math.sin(bounce_angle);
+    }
+    canvasCtx!.fillRect(ball.x, ball.y, pong_ball_size, pong_ball_size);
+
     //check X Y bounds for ball, invert velocity on hit
     if(outOfBoundsY(ball)){
       ball.yVelocity = -ball.yVelocity;
     }
     //stop ball, setup for next point
     if(outOfBoundsX(ball)){
-      ball.x -= ball.xVelocity / ball_velocity;
+      ball.x -= ball.xVelocity; // / ball_velocity;
       ball.xVelocity = 0;
       ball.yVelocity = 0;
       if(player_score < final_score && ai_score < final_score){
         setupPoint();
       }
     }
-    if(hitPaddleX(player_paddle, ai_paddle, ball)){
-      ball.xVelocity = -ball.xVelocity;
-    }
-    canvasCtx!.fillRect(ball.x, ball.y, pong_ball_size, pong_ball_size);
 
     //if either player has reached the score limit, end the game
     if(player_score === final_score || ai_score === final_score){
