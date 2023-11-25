@@ -259,13 +259,18 @@ function App() {
       else if(player_score === 8) ai_mode_velocity = 6.34;//3.22;
       else if(player_score === 10) ai_mode_velocity = 6.4;//3.25;
 
-      if(ai_paddle.y+(ai_paddle.height/2) > ball.y){
+      //if(ai_paddle.y+(ai_paddle.height/2) > ball.y){
+      if(ai_paddle.y > ball.y){ 
         if(ball.xVelocity < 0) ai_paddle.yVelocity = -ai_mode_velocity/2.5;
         else ai_paddle.yVelocity = -ai_mode_velocity;
       }
-      if(ai_paddle.y+(ai_paddle.height/2) < ball.y){
+      //if(ai_paddle.y+(ai_paddle.height/2) < ball.y){
+      else if(ai_paddle.y + ai_paddle.height < ball.y){
         if(ball.xVelocity < 0) ai_paddle.yVelocity = ai_mode_velocity/2.5;
         else ai_paddle.yVelocity = ai_mode_velocity;
+      }
+      else{
+        ai_paddle.yVelocity = 0;
       }
     }
 
