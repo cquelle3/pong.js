@@ -1,7 +1,7 @@
 {
   "name": "pong.js",
-  "homepage": "https://cquelle3.github.io/pong.js/pong.js",
-  "private": false,
+  "homepage": "https://cquelle3.github.io/pong.js",
+  "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
