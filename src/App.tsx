@@ -41,10 +41,10 @@ function App() {
   const paddle_wall_padding: number = 15;
   const pong_ball_size: number = 10;
 
-  const paddle_velocity: number = 9;//4.5;
-  const ball_velocity: number = 7.5;//3.75;
+  const paddle_velocity: number = 8.5;//4.5;
+  const ball_velocity: number = 7;//3.75;
 
-  const og_ai_mode_velocity: number = 6.12;//3.06;
+  const og_ai_mode_velocity: number = 6.02;//3.06;
   let ai_mode_velocity: number = og_ai_mode_velocity;
 
   const player_paddle: gameObj = {
@@ -255,9 +255,9 @@ function App() {
     //ai paddle
     //ai paddle logic
     if(play_ai){
-      if(player_score === 4) ai_mode_velocity = 6.28;//3.14;
-      else if(player_score === 8) ai_mode_velocity = 6.44;//3.22;
-      else if(player_score === 10) ai_mode_velocity = 6.5;//3.25;
+      if(player_score === 4) ai_mode_velocity = 6.18;//3.14;
+      else if(player_score === 8) ai_mode_velocity = 6.34;//3.22;
+      else if(player_score === 10) ai_mode_velocity = 6.4;//3.25;
 
       if(ai_paddle.y+(ai_paddle.height/2) > ball.y){
         if(ball.xVelocity < 0) ai_paddle.yVelocity = -ai_mode_velocity/2.5;
